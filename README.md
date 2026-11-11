@@ -28,7 +28,7 @@ prompt. See [Building](#building) and [Testing](#testing) for the details.
 ## Status
 
 - [x] **Phase 0** — Foundation: build environment ready; stock Arch ISO builds and boots to a `root@archiso` shell under UEFI (OVMF) in QEMU, verified headlessly
-- [x] **Phase 1a** — Horizon archiso profile: own branding (ISO name/label, hostname, `os-release`, MOTD, boot menus) on a trimmed package set
+- [x] **Phase 1a** — Horizon archiso profile: own branding (ISO name/label, hostname, `os-release`, MOTD, boot menus) on a trimmed package set; the resulting ISO builds and boots to a `[root@horizon ~]#` shell under UEFI (OVMF), verified headlessly
 - [ ] **Phase 1b** — Horizon CLI OS v0.1 (`horizon` CLI, TUI installer, AUR helper, signed `[horizon]` repo)
 - [ ] **Phase 2** — Multi-kernel support (`linux`, `linux-lts`, `horizon-kernel`)
 - [ ] **Phase 3** — GUI base + selectable desktops (Plasma, GNOME, Cinnamon, Hyprland, XFCE)

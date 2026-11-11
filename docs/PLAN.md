@@ -4,7 +4,7 @@
 > custom kernel support, starting as a CLI OS and growing into a full GUI desktop
 > with selectable desktop environments (KDE Plasma, GNOME, Cinnamon, Hyprland, XFCE).
 
-**Status:** Phase 0 complete; Phase 1a (Horizon profile + branding) complete. Phase 1b (Rust tooling) not started.
+**Status:** Phase 0 complete; Phase 1a complete — the Horizon ISO (`horizon-2026.11.11-x86_64.iso`, label `HORIZON_202611`) builds and boots to a `[root@horizon ~]#` shell under UEFI (OVMF), verified headlessly with the OCR boot test. Phase 1b (Rust tooling) not started.
 **Repo:** `D:\Albarr\VSC-Projects\Horizon-OS`
 **Build host:** Arch Linux WSL2 distro (`wsl -d archlinux`)
 **Test target:** QEMU VM with WHPX acceleration, UEFI (OVMF)
@@ -176,6 +176,9 @@ WSL-specific config and lacks general hardware drivers.
   tools dropped, `cloud-init` removed along with its five enablement symlinks) plus
   `base-devel` and `git` for in-live AUR builds.
 - **Deliverable:** the ISO is Horizon-branded end to end and boots to `[root@horizon ~]#`. ✅
+  Verified: `horizon-2026.11.11-x86_64.iso` (label `HORIZON_202611`, 358 packages)
+  boots under UEFI/OVMF; the OCR of the console reads `Horizon OS (tty1)`,
+  `horizon login: root (automatic login)` and the Horizon MOTD.
 
 ### Phase 1b — Horizon CLI OS v0.1
 - Signed local `[horizon]` repository containing our packages.
