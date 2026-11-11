@@ -4,7 +4,7 @@
 > custom kernel support, starting as a CLI OS and growing into a full GUI desktop
 > with selectable desktop environments (KDE Plasma, GNOME, Cinnamon, Hyprland, XFCE).
 
-**Status:** Plan agreed, implementation not started.
+**Status:** Phase 0 complete; Phase 1a (Horizon profile + branding) complete. Phase 1b (Rust tooling) not started.
 **Repo:** `D:\Albarr\VSC-Projects\Horizon-OS`
 **Build host:** Arch Linux WSL2 distro (`wsl -d archlinux`)
 **Test target:** QEMU VM with WHPX acceleration, UEFI (OVMF)
@@ -102,9 +102,11 @@ Horizon-OS/
 │   └── systemd/
 ├── scripts/
 │   ├── bootstrap-wsl.sh
-│   ├── build-repo.sh
 │   ├── build-iso.sh
-│   └── run-qemu.sh
+│   ├── create-profile-symlinks.ps1
+│   ├── run-qemu.ps1
+│   ├── test-boot.ps1
+│   └── ocr-screenshot.ps1
 ├── iso/                      build output (gitignored)
 └── docs/
 ```
@@ -152,17 +154,30 @@ WSL-specific config and lacks general hardware drivers.
 
 ## 6. Phases
 
-### Phase 0 — Foundation & pipeline proof
+### Phase 0 — Foundation & pipeline proof ✅
 - Install `git`, `grub`, `efibootmgr`, and remaining build deps in the Arch WSL distro.
 - Create `~/horizon` build root on the WSL ext4 filesystem (do **not** build on
   `/mnt/d` — the 9p filesystem makes kernel builds crawl). Repo stays on `D:` as
   the source of truth and is rsynced across before builds.
 - Scaffold the repository structure.
 - Build a **stock Arch ISO** with `mkarchiso` and boot it in QEMU + OVMF.
-- **Deliverable:** unmodified Arch ISO boots in QEMU. Pipeline proven before any custom work.
+- **Deliverable:** unmodified Arch ISO boots in QEMU. Pipeline proven before any custom work. ✅
 
-### Phase 1 — Horizon CLI OS v0.1
-- Branded archiso profile: `os-release`, `issue`, `motd`, hostname, boot splash.
+  Done. `archlinux-2026.11.11-x86_64.iso` builds (1.3 GB, BIOS syslinux + UEFI
+  systemd-boot) and boots to a `root@archiso` shell under UEFI/OVMF, verified
+  headlessly by `scripts/test-boot.ps1 -Ocr`.
+
+### Phase 1a — Horizon profile and branding ✅
+- Full archiso profile derived from `releng`, rebranded: ISO name `horizon`, label
+  `HORIZON_<YYYYMM>`, volume layout `/horizon/...`, hostname `horizon`,
+  `/etc/os-release` = `NAME="Horizon OS"`, own MOTD, and all three bootloaders
+  retitled `Horizon OS install medium (...)`.
+- Package list trimmed to a desktop distribution's needs (server/forensics/cloning
+  tools dropped, `cloud-init` removed along with its five enablement symlinks) plus
+  `base-devel` and `git` for in-live AUR builds.
+- **Deliverable:** the ISO is Horizon-branded end to end and boots to `[root@horizon ~]#`. ✅
+
+### Phase 1b — Horizon CLI OS v0.1
 - Signed local `[horizon]` repository containing our packages.
 - Rust workspace: `horizon` CLI + `horizon-install` TUI installer.
 - `horizon-aur` v1 — AUR search/install via RPC + `makepkg` + libalpm.
@@ -210,6 +225,14 @@ WSL-specific config and lacks general hardware drivers.
 
 ## 8. Immediate next step
 
-Begin **Phase 0**: install missing packages (`git`, `grub`, `efibootmgr`), create
-the `~/horizon` build root, scaffold the repository, and produce a stock Arch ISO
-that boots in QEMU + OVMF as the pipeline proof.
+**Phase 1b.** With the profile and branding done, the next work is the original
+tooling:
+
+1. A signed local `[horizon]` repository plus `packages/horizon-release` (keyring)
+   so the live medium can `pacman -S` Horizon packages.
+2. The Rust workspace under `src/` — start with `horizon` (the distro CLI) and
+   `horizon-install` (the ratatui TUI installer).
+3. `horizon-aur` v1: AUR RPC search, `makepkg` in a build sandbox, install through
+   libalpm.
+4. Horizon `pacman.conf`/mirrorlist shipping in `airootfs`, and a first-boot user
+   setup path.

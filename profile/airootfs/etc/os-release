@@ -1,0 +1,11 @@
+NAME="Horizon OS"
+PRETTY_NAME="Horizon OS"
+ID=horizon
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;2;23;147;209"
+HOME_URL="https://github.com/JustAKid-hash/Horizon-OS"
+DOCUMENTATION_URL="https://github.com/JustAKid-hash/Horizon-OS/tree/main/docs"
+SUPPORT_URL="https://github.com/JustAKid-hash/Horizon-OS/issues"
+BUG_REPORT_URL="https://github.com/JustAKid-hash/Horizon-OS/issues"
+LOGO=horizon-logo

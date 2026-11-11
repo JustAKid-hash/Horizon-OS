@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Show the Horizon OS installation guide.
+#
+# On a graphical session this opens the URL in a browser; on the console (the
+# usual case for the live medium) it simply prints the URL.
+
+GUIDE_URL='https://wiki.archlinux.org/title/Installation_guide'
+
+if [ -t 1 ] && command -v xdg-open >/dev/null 2>&1 &&
+   { [ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ]; }; then
+    exec xdg-open "$GUIDE_URL"
+fi
+
+printf '%s\n' "$GUIDE_URL"
