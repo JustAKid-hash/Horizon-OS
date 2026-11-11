@@ -1,0 +1,11 @@
+# Runs when horizon-keyring is installed or upgraded. Imports the Horizon signing
+# key into the system pacman keyring and trusts it locally.
+post_install() {
+  pacman-key --init >/dev/null 2>&1 || true
+  pacman-key --populate horizon >/dev/null 2>&1 || pacman-key --add /usr/share/horizon/horizon.asc >/dev/null 2>&1 || true
+  pacman-key --lsign-key D79741D1FCB5727034D58CF9BD1F1C11F2C0053B >/dev/null 2>&1 || true
+}
+
+post_upgrade() {
+  post_install
+}

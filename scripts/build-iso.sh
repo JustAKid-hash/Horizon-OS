@@ -36,6 +36,34 @@ else
   PROFILE="$BUILD_ROOT/profile-$PROFILE_NAME"
 fi
 
+# Build the Rust tooling if needed, and stage it into the live medium.
+if [[ ! -x "$BUILD_ROOT/target/release/horizon" ]]; then
+  echo "==> Horizon binary missing; building Rust workspace"
+  bash "$REPO_DIR/scripts/build-rust.sh"
+fi
+echo "==> Staging Horizon CLI into the live medium"
+mkdir -p "$PROFILE/airootfs/usr/bin" "$PROFILE/airootfs/usr/share/horizon"
+install -m755 "$BUILD_ROOT/target/release/horizon"         "$PROFILE/airootfs/usr/bin/horizon"
+install -m755 "$BUILD_ROOT/target/release/horizon-install" "$PROFILE/airootfs/usr/bin/horizon-install"
+if [[ -f "$REPO_DIR/packages/horizon-keyring/horizon.asc" ]]; then
+  install -m644 "$REPO_DIR/packages/horizon-keyring/horizon.asc" "$PROFILE/airootfs/usr/share/horizon/horizon.asc"
+fi
+
+# Stage the signed [horizon] repository into the live medium (if it has been built).
+if [[ -d "$BUILD_ROOT/repo" ]]; then
+  echo "==> Staging [horizon] repository into the live medium"
+  mkdir -p "$PROFILE/airootfs/usr/share/horizon"
+  rsync -a --delete "$BUILD_ROOT/repo/" "$PROFILE/airootfs/usr/share/horizon/repo/"
+  # Make the same path resolvable on the build host so mkarchiso's pacstrap
+  # can fetch [horizon] packages during the ISO build.
+  mkdir -p /usr/share/horizon
+  if [[ ! -e /usr/share/horizon/repo ]]; then
+    ln -s "$BUILD_ROOT/repo" /usr/share/horizon/repo
+  fi
+else
+  echo "==> No [horizon] repo at $BUILD_ROOT/repo; skipping (run scripts/build-repo.sh to enable it)"
+fi
+
 echo "==> Cleaning work directory"
 rm -rf "$BUILD_ROOT/work"
 mkdir -p "$BUILD_ROOT/work"

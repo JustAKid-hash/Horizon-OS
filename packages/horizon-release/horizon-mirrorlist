@@ -1,0 +1,9 @@
+## Horizon OS package repository mirrorlist
+##
+## No public mirror is hosted yet. To use a locally built repository, point
+## the Server below at it and uncomment the [horizon] entry in
+## /etc/pacman.conf (see /etc/pacman.d/horizon-repo.conf):
+##
+##   Server = file:///usr/share/horizon/repo
+##
+#Server = file:///usr/share/horizon/repo

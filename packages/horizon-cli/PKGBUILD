@@ -1,0 +1,17 @@
+# Maintainer: ZeroByte <236030943+JustAKid-hash@users.noreply.github.com>
+pkgname=horizon-cli
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Horizon OS command-line tools (horizon, horizon-install)"
+arch=('x86_64')
+url="https://github.com/JustAKid-hash/Horizon-OS"
+license=('MIT')
+depends=('pacman')
+options=('!debug')
+source=('horizon' 'horizon-install')
+sha256sums=('SKIP' 'SKIP')
+
+package() {
+  install -Dm755 horizon "$pkgdir/usr/bin/horizon"
+  install -Dm755 horizon-install "$pkgdir/usr/bin/horizon-install"
+}

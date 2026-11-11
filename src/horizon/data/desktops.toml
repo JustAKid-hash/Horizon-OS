@@ -1,0 +1,242 @@
+# Horizon OS desktop environment catalog.
+#
+# This file is the single source of truth for desktop environments. It is
+# embedded into the `horizon` CLI at compile time, and scripts/build-repo.sh
+# asks the CLI to generate the matching horizon-desktop-* meta-packages from it.
+# Edit here once; the CLI and the packages both follow.
+#
+# Every package name is a plain Arch repository package. Horizon OS keeps pacman
+# and the AUR exactly as upstream ships them -- nothing here replaces either.
+#
+# Schema:
+#   [meta]     -- catalog metadata + the package set shared by every desktop
+#   [[desktop]] -- one desktop environment
+#     id               short stable identifier used on the command line
+#     name             display name
+#     summary          one line, shown by `horizon desktop list`
+#     session          "wayland", "x11" or "both" (informational)
+#     marker           package whose presence means the desktop is installed
+#     display_manager  package providing the login screen
+#     dm_service       systemd unit that starts it
+#     packages         desktop-specific packages (common is added on top)
+#     notes            lines printed after a successful install
+
+[meta]
+version = 1
+
+# Installed for every desktop, before the desktop-specific package set.
+common = [
+  # session and desktop plumbing
+  "xdg-desktop-portal",
+  "xdg-user-dirs",
+  "xdg-utils",
+  "polkit",
+  # audio
+  "pipewire",
+  "pipewire-alsa",
+  "pipewire-pulse",
+  "pipewire-jack",
+  "wireplumber",
+  "pavucontrol",
+  # network
+  "networkmanager",
+  "network-manager-applet",
+  "nm-connection-editor",
+  # bluetooth
+  "bluez",
+  "bluez-utils",
+  # fonts
+  "noto-fonts",
+  "noto-fonts-emoji",
+  "noto-fonts-cjk",
+  "ttf-dejavu",
+  "ttf-liberation",
+  "ttf-font-awesome",
+  # storage helpers used by every file manager
+  "gvfs",
+  "gvfs-mtp",
+  "gvfs-smb",
+  "gvfs-gphoto2",
+  "gvfs-nfs",
+  # everyday tools
+  "firefox",
+  "sudo",
+  "bash-completion",
+  "man-db",
+  "man-pages",
+  "htop",
+  "fastfetch",
+  "nano",
+  "vim",
+  "less",
+  "unzip",
+  "zip",
+  "p7zip",
+  "rsync",
+  "wget",
+  "curl",
+  "git",
+]
+
+[[desktop]]
+id = "plasma"
+name = "KDE Plasma"
+summary = "Full-featured, highly configurable, Wayland-first"
+session = "both"
+marker = "plasma-desktop"
+display_manager = "sddm"
+dm_service = "sddm.service"
+packages = [
+  "plasma-meta",
+  "plasma-nm",
+  "plasma-pa",
+  "plasma-workspace-wallpapers",
+  "bluedevil",
+  "powerdevil",
+  "breeze-gtk",
+  "kde-gtk-config",
+  "xdg-desktop-portal-kde",
+  "kwallet-pam",
+  "kwalletmanager",
+  "dolphin",
+  "konsole",
+  "kate",
+  "ark",
+  "spectacle",
+  "gwenview",
+  "okular",
+  "kcalc",
+  "kfind",
+  "kinfocenter",
+  "sddm",
+  "sddm-kcm",
+  "discover",
+  "packagekit-qt6",
+]
+notes = [
+  "Plasma boots into a Wayland session; an X11 session is available at the login screen.",
+]
+
+[[desktop]]
+id = "gnome"
+name = "GNOME"
+summary = "Modern and opinionated, Wayland-only by default"
+session = "wayland"
+marker = "gnome-shell"
+display_manager = "gdm"
+dm_service = "gdm.service"
+packages = [
+  "gnome",
+  "gnome-tweaks",
+  "gnome-browser-connector",
+  "gdm",
+  "xdg-desktop-portal-gnome",
+  "xdg-user-dirs-gtk",
+  "gnome-shell-extensions",
+]
+notes = [
+  "The `gnome` group already pulls in Nautilus, Console, Calculator, Disks and the rest.",
+]
+
+[[desktop]]
+id = "cinnamon"
+name = "Cinnamon"
+summary = "Traditional desktop, familiar Windows-like layout"
+session = "x11"
+marker = "cinnamon"
+display_manager = "lightdm"
+dm_service = "lightdm.service"
+packages = [
+  "cinnamon",
+  "cinnamon-translations",
+  "xapp",
+  "xdg-desktop-portal-xapp",
+  "xdg-desktop-portal-gtk",
+  "nemo",
+  "nemo-fileroller",
+  "xed",
+  "xreader",
+  "gnome-terminal",
+  "gnome-screenshot",
+  "gnome-system-monitor",
+  "gnome-calculator",
+  "gnome-disk-utility",
+  "gnome-keyring",
+  "gnome-backgrounds",
+  "mint-themes",
+  "blueman",
+  "lightdm",
+  "lightdm-gtk-greeter",
+  "lightdm-gtk-greeter-settings",
+]
+notes = [
+  "Cinnamon runs an X11 session and uses LightDM for the login screen.",
+]
+
+[[desktop]]
+id = "hyprland"
+name = "Hyprland"
+summary = "Tiling Wayland compositor, keyboard-driven, no desktop shell"
+session = "wayland"
+marker = "hyprland"
+display_manager = "sddm"
+dm_service = "sddm.service"
+packages = [
+  "hyprland",
+  "hyprpaper",
+  "hyprlock",
+  "hypridle",
+  "hyprpicker",
+  "hyprpolkitagent",
+  "xdg-desktop-portal-hyprland",
+  "xdg-desktop-portal-gtk",
+  "polkit-gnome",
+  "waybar",
+  "wofi",
+  "kitty",
+  "dunst",
+  "swaybg",
+  "grim",
+  "slurp",
+  "wl-clipboard",
+  "cliphist",
+  "qt5-wayland",
+  "qt6-wayland",
+  "thunar",
+  "blueman",
+  "sddm",
+]
+notes = [
+  "Hyprland is configured by hand: there is no settings application.",
+  "The example config lands in ~/.config/hypr/hyprland.conf on first login.",
+]
+
+[[desktop]]
+id = "xfce"
+name = "XFCE"
+summary = "Lightweight and stable, low memory, X11"
+session = "x11"
+marker = "xfce4-session"
+display_manager = "lightdm"
+dm_service = "lightdm.service"
+packages = [
+  "xfce4",
+  "xfce4-goodies",
+  "xfce4-whiskermenu-plugin",
+  "xfce4-pulseaudio-plugin",
+  "thunar",
+  "thunar-volman",
+  "tumbler",
+  "ffmpegthumbnailer",
+  "mousepad",
+  "ristretto",
+  "parole",
+  "gnome-keyring",
+  "blueman",
+  "lightdm",
+  "lightdm-gtk-greeter",
+  "lightdm-gtk-greeter-settings",
+]
+notes = [
+  "XFCE runs an X11 session and uses LightDM for the login screen.",
+]

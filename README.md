@@ -6,8 +6,10 @@ Rust tooling — growing from a CLI system into a full GUI desktop.
 
 See [`docs/PLAN.md`](docs/PLAN.md) for the full design and rationale.
 
-**Status:** early. The ISO builds and boots to a Horizon-branded shell; the
-installer and package tooling are not written yet.
+**Status:** Phase 1a complete (Horizon-branded ISO builds and boots); Phase 1b in
+progress (Rust `horizon` CLI and `horizon-install` TUI installer written and
+building; signed `[horizon]` repository machinery in place). Pacman and the AUR are
+used exactly as upstream ships them.
 
 ## Quick start
 
@@ -29,10 +31,10 @@ prompt. See [Building](#building) and [Testing](#testing) for the details.
 
 - [x] **Phase 0** — Foundation: build environment ready; stock Arch ISO builds and boots to a `root@archiso` shell under UEFI (OVMF) in QEMU, verified headlessly
 - [x] **Phase 1a** — Horizon archiso profile: own branding (ISO name/label, hostname, `os-release`, MOTD, boot menus) on a trimmed package set; the resulting ISO builds and boots to a `[root@horizon ~]#` shell under UEFI (OVMF), verified headlessly
-- [ ] **Phase 1b** — Horizon CLI OS v0.1 (`horizon` CLI, TUI installer, AUR helper, signed `[horizon]` repo)
+- [~] **Phase 1b** — Horizon CLI OS v0.1 (`horizon` CLI, TUI installer, signed `[horizon]` repo, desktop meta-packages)
 - [ ] **Phase 2** — Multi-kernel support (`linux`, `linux-lts`, `horizon-kernel`)
-- [ ] **Phase 3** — GUI base + selectable desktops (Plasma, GNOME, Cinnamon, Hyprland, XFCE)
-- [ ] **Phase 4** — `horizon-pm` (libalpm-backed package manager) + polish
+- [ ] **Phase 3** — GUI polish (settings app, first-run wizard)
+- [ ] **Phase 4** — Repository hosting, polish and releases
 
 ## Layout
 
@@ -156,9 +158,10 @@ sudo dd if=/root/horizon/out/horizon-*.iso of=/dev/sdX bs=4M status=progress ofl
 ```
 
 Then boot the machine from the stick. The systemd-boot / GRUB / syslinux menu
-offers **Horizon OS install medium** and a speakup screen-reader variant. Nothing
-is written to disk unless you partition it yourself — at this stage the live
-medium is a shell, not yet a guided installer.
+offers **Horizon OS install medium** and a speakup screen-reader variant. The live
+medium ships `horizon-install`, a TUI installer that partitions, pacstraps and
+configures a system (optionally with a desktop environment); nothing is written
+to disk until you confirm on the final screen.
 
 ## Notes for contributors
 

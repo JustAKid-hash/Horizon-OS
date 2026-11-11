@@ -1,0 +1,5 @@
+# Pinned for rustup users. The distro builds with Arch's `rust` package, which
+# ignores this file; it exists so a contributor on rustup gets the same stable
+# compiler the packages are built with.
+[toolchain]
+channel = "stable"

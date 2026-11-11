@@ -4,7 +4,7 @@
 > custom kernel support, starting as a CLI OS and growing into a full GUI desktop
 > with selectable desktop environments (KDE Plasma, GNOME, Cinnamon, Hyprland, XFCE).
 
-**Status:** Phase 0 complete; Phase 1a complete — the Horizon ISO (`horizon-2026.11.11-x86_64.iso`, label `HORIZON_202611`) builds and boots to a `[root@horizon ~]#` shell under UEFI (OVMF), verified headlessly with the OCR boot test. Phase 1b (Rust tooling) not started.
+**Status:** Phase 0 complete; Phase 1a complete — the Horizon ISO (`horizon-2026.11.11-x86_64.iso`, label `HORIZON_202611`) builds and boots to a `[root@horizon ~]#` shell under UEFI (OVMF), verified headlessly with the OCR boot test. Phase 1b in progress — `horizon` CLI and `horizon-install` TUI installer written and building; signed `[horizon]` repository machinery in place.
 **Repo:** `D:\Albarr\VSC-Projects\Horizon-OS`
 **Build host:** Arch Linux WSL2 distro (`wsl -d archlinux`)
 **Test target:** QEMU VM with WHPX acceleration, UEFI (OVMF)
@@ -18,7 +18,7 @@
 | Base strategy | **Hybrid** — Arch-based rootfs so pacman/AUR work immediately, then progressively replace components with our own Rust implementations while keeping pacman compatibility |
 | Kernel for v1 | **Both, selectable** — Arch stock `linux`, Arch `linux-lts`, and our `horizon-kernel` (built from `linux-7.3.4.tar.xz`) |
 | Where it runs | **QEMU VM first** (WHPX acceleration), bare metal later |
-| Code scope | **Full custom stack** — own CLI, own package manager, own AUR helper, own TUI installer, own kernel manager |
+| Code scope | **Custom tooling around stock Arch** — own CLI, own TUI installer, own kernel manager, own branding and desktop meta-packages; pacman and the AUR are used exactly as upstream ships them |
 
 ---
 
@@ -31,15 +31,18 @@ Pacman is a C program that links `libalpm` — the library that actually parses
 `/var/lib/pacman`. The AUR does not talk to pacman at all; it talks to `makepkg`
 and the package format.
 
-Therefore our own package manager (`horizon-pm`) is written in **Rust against
-`libalpm`** (via the `alpm` crate), not as a replacement package *format*.
+**Decision (revised): pacman and the AUR are used exactly as upstream Arch ships
+them.** Horizon OS does not reimplement either — they work very well, and every
+Arch package, `PKGBUILD`, `makepkg` and AUR helper keeps working unmodified.
+Horizon's own code is the CLI, the TUI installer, the kernel manager, the
+branding and the desktop meta-packages.
 
 Consequences:
 
-- `horizon-pm` reads and writes the **exact same database and package format** as pacman.
+- No `horizon-pm`, no `horizon-aur`. The system is always a normal Arch system.
+- Our code layers on top of pacman rather than beside it, so there is nothing to
+  keep in sync with `libalpm`.
 - The AUR, `makepkg`, `PKGBUILD`s and every Arch package keep working permanently.
-- It can run side by side with pacman during development, swapped over once proven.
-- We get Rust safety and our own UX without forking the ecosystem.
 
 This is the difference between a distro that *replaces* pacman (breaking the AUR)
 and one that *reimplements* it (keeping the AUR). It is the single most important
@@ -90,8 +93,6 @@ Horizon-OS/
 │   └── horizon-desktop-{plasma,gnome,cinnamon,hyprland,xfce}/
 ├── src/                      Rust workspace (all original code)
 │   ├── horizon/              the distro CLI
-│   ├── horizon-pm/           libalpm-backed package manager
-│   ├── horizon-aur/          AUR helper (RPC + makepkg + libalpm)
 │   ├── horizon-install/      TUI installer (ratatui)
 │   ├── horizon-kernel/       kernel build/install/switch
 │   └── horizon-hwd/          hardware detection — C
@@ -115,8 +116,8 @@ Horizon-OS/
 
 | Layer | v1 (works immediately) | Horizon version | Language |
 |---|---|---|---|
-| Package manager | `pacman` | `horizon-pm` (libalpm) | Rust |
-| AUR helper | `paru` | `horizon-aur` | Rust |
+| Package manager | `pacman` (unchanged) | — | — |
+| AUR helper | `paru`/`yay` (unchanged) | — | — |
 | Installer | `archinstall` | `horizon-install` (TUI) | Rust |
 | Kernel management | manual | `horizon-kernel` | Rust |
 | Hardware detection | udev/hwdb | `horizon-hwd` | C |
@@ -125,7 +126,7 @@ Horizon-OS/
 
 ### Language allocation
 
-- **Rust** — distro CLI, TUI installer, AUR helper, kernel manager, package manager, daemon. The bulk of original code.
+- **Rust** — distro CLI, TUI installer, kernel manager, daemon. The bulk of original code.
 - **C** — `horizon-hwd` hardware detection (sysfs/DMI), custom `mkinitcpio` hooks, kernel patches/config work.
 - **C++** — only from Phase 3: `horizon-settings` (Qt6/Kirigami). Not added before it is needed.
 
@@ -181,12 +182,13 @@ WSL-specific config and lacks general hardware drivers.
   `horizon login: root (automatic login)` and the Horizon MOTD.
 
 ### Phase 1b — Horizon CLI OS v0.1
-- Signed local `[horizon]` repository containing our packages.
+- Signed local `[horizon]` repository (`horizon-keyring`, `horizon-release`,
+  `horizon-cli` and the `horizon-desktop-*` meta-packages).
 - Rust workspace: `horizon` CLI + `horizon-install` TUI installer.
-- `horizon-aur` v1 — AUR search/install via RPC + `makepkg` + libalpm.
-- Horizon pacman config and mirrorlist.
+- Desktop environments as first-class citizens: `horizon desktop list|show|packages|status|install <id>` and `horizon-desktop-{plasma,gnome,cinnamon,hyprland,xfce}` meta-packages generated from a single catalog (`src/horizon/data/desktops.toml`).
+- Horizon pacman config and mirrorlist (pacman and the AUR used unmodified).
 - NetworkManager, user creation, sudo configuration.
-- **Deliverable:** Horizon-branded ISO boots to a login TTY, installs to disk, pacman + AUR functional.
+- **Deliverable:** Horizon-branded ISO boots to a login TTY, installs to disk, offers a choice of desktop environment, pacman + AUR functional.
 
 ### Phase 2 — Multi-kernel support
 - `horizon-kernel` PKGBUILD building `linux-7.3.4` with the Horizon config and
@@ -195,19 +197,16 @@ WSL-specific config and lacks general hardware drivers.
 - Boot menu listing all installed kernels; kernel choice offered at install time.
 - **Deliverable:** choose stock `linux`, `linux-lts`, or `horizon-kernel`.
 
-### Phase 3 — GUI base and desktops
-- Wayland/X11 stack, mesa, GPU drivers, SDDM/GDM.
-- `horizon-desktop-{plasma,gnome,cinnamon,hyprland,xfce}` meta-packages.
-- `horizon desktop list | install <de>`.
-- C++ `horizon-settings` (Qt6/Kirigami).
-- **Deliverable:** working GUI with switchable desktop environments.
+### Phase 3 — GUI base and desktop polish
+- Wayland/X11 stack, mesa, GPU drivers, SDDM/GDM (already pulled in by the Phase 1b desktop meta-packages).
+- C++ `horizon-settings` (Qt6/Kirigami) for a unified settings app.
+- First-run wizard, GUI installer.
+- **Deliverable:** polished GUI with switchable desktop environments.
 
-### Phase 4 — Own package manager and polish
-- `horizon-pm` in Rust over libalpm — a pacman-compatible package manager that
-  preserves full AUR support.
+### Phase 4 — Hosting, polish and releases
+- Repository hosting (public mirror) and package signing (already signed locally).
 - GUI installer, first-run wizard.
-- Repository hosting and package signing.
-- Release builds.
+- Release builds and ISO publishing.
 - **Deliverable:** Horizon OS releases using its own tooling end to end.
 
 ---
@@ -217,7 +216,7 @@ WSL-specific config and lacks general hardware drivers.
 - **Replacing systemd as PID 1 is not recommended.** It is the highest-risk,
   lowest-reward item: reimplementing service management, logging, cgroup handling
   and dependency ordering, while every package's unit files stop working. The
-  recommendation is to keep systemd and spend that effort on `horizon-pm` instead.
+  recommendation is to keep systemd.
   This remains the user's call.
 - Kernel compiles are ~30–45 minutes each at `-j8` (8 cores available in WSL).
 - Full desktop environment installs are several GB.
@@ -228,14 +227,12 @@ WSL-specific config and lacks general hardware drivers.
 
 ## 8. Immediate next step
 
-**Phase 1b.** With the profile and branding done, the next work is the original
-tooling:
+**Phase 1b (in progress).** Remaining work:
 
-1. A signed local `[horizon]` repository plus `packages/horizon-release` (keyring)
-   so the live medium can `pacman -S` Horizon packages.
-2. The Rust workspace under `src/` — start with `horizon` (the distro CLI) and
-   `horizon-install` (the ratatui TUI installer).
-3. `horizon-aur` v1: AUR RPC search, `makepkg` in a build sandbox, install through
-   libalpm.
-4. Horizon `pacman.conf`/mirrorlist shipping in `airootfs`, and a first-boot user
-   setup path.
+1. Test `horizon-install` end to end in QEMU against a blank qcow2 (headless
+   `--yes --force` path, then boot from disk).
+2. Rebuild the ISO with the staged `[horizon]` repository and verify
+   `horizon`/`horizon-install` work on the live medium.
+3. Publish the repository (GitHub Pages or release assets) so installed systems
+   can `pacman -S` Horizon packages.
+4. `horizon-kernel` PKGBUILD building `linux-7.3.4` with the Horizon config.

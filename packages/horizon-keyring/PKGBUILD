@@ -1,0 +1,17 @@
+# Maintainer: ZeroByte <236030943+JustAKid-hash@users.noreply.github.com>
+pkgname=horizon-keyring
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="GPG keyring for the Horizon OS package repository"
+arch=('any')
+url="https://github.com/JustAKid-hash/Horizon-OS"
+license=('MIT')
+install=horizon-keyring.install
+source=()
+sha256sums=()
+
+package() {
+  install -Dm644 "$startdir/horizon.gpg"     "$pkgdir/usr/share/pacman/keyrings/horizon.gpg"
+  install -Dm644 "$startdir/horizon-trusted" "$pkgdir/usr/share/pacman/keyrings/horizon-trusted"
+  install -Dm644 "$startdir/horizon.asc"     "$pkgdir/usr/share/horizon/horizon.asc"
+}

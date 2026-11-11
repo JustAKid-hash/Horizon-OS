@@ -1,0 +1,22 @@
+# Maintainer: ZeroByte <236030943+JustAKid-hash@users.noreply.github.com>
+pkgname=horizon-release
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Horizon OS release files (os-release, issue, motd, repository config)"
+arch=('any')
+url="https://github.com/JustAKid-hash/Horizon-OS"
+license=('MIT')
+depends=('horizon-keyring')
+backup=('etc/os-release' 'etc/issue' 'etc/motd' 'etc/lsb-release'
+        'etc/pacman.d/horizon-mirrorlist' 'etc/pacman.d/horizon-repo.conf')
+source=('os-release' 'issue' 'motd' 'lsb-release' 'horizon-mirrorlist' 'horizon-repo.conf')
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package() {
+  install -Dm644 os-release "$pkgdir/etc/os-release"
+  install -Dm644 issue "$pkgdir/etc/issue"
+  install -Dm644 motd "$pkgdir/etc/motd"
+  install -Dm644 lsb-release "$pkgdir/etc/lsb-release"
+  install -Dm644 horizon-mirrorlist "$pkgdir/etc/pacman.d/horizon-mirrorlist"
+  install -Dm644 horizon-repo.conf "$pkgdir/etc/pacman.d/horizon-repo.conf"
+}

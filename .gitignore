@@ -15,6 +15,9 @@ packages/**/pkg/
 packages/**/src/
 packages/**/*.pkg.tar.zst
 packages/**/*.pkg.tar.zst.sig
+# Staged prebuilt binaries for horizon-cli (produced by build-repo.sh)
+packages/horizon-cli/horizon
+packages/horizon-cli/horizon-install
 
 # Rust
 target/
@@ -23,3 +26,10 @@ target/
 # Local
 *.log
 .env
+
+# Staged build artifacts (produced by build-iso.sh / build-repo.sh)
+profile/airootfs/usr/bin/horizon
+profile/airootfs/usr/bin/horizon-install
+profile/airootfs/usr/share/horizon/horizon.asc
+profile/airootfs/usr/share/horizon/repo/
+packages/.horizon-key-id
