@@ -1,0 +1,25 @@
+# Build output
+iso/
+work/
+out/
+*.iso
+*.iso.sha512
+*.iso.sig
+
+# Kernel source tarballs (large; re-fetched or kept out of band)
+*.tar.xz
+*.tar.gz
+
+# Arch package build artifacts
+packages/**/pkg/
+packages/**/src/
+packages/**/*.pkg.tar.zst
+packages/**/*.pkg.tar.zst.sig
+
+# Rust
+target/
+**/target/
+
+# Local
+*.log
+.env

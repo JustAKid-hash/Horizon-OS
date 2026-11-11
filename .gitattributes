@@ -1,0 +1,15 @@
+# Shell scripts and Linux config must stay LF — they run inside the WSL build host.
+* text=auto eol=lf
+
+# Windows-side scripts are happier with CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary artifacts
+*.tar.xz binary
+*.tar.gz binary
+*.iso binary
+*.qcow2 binary
+*.fd binary
+*.pkg.tar.zst binary
