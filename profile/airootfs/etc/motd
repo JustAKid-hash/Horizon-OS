@@ -1,17 +1,18 @@
-
+ 
   Welcome to Horizon OS 0.1  (live medium)
-
+ 
   Horizon OS is an Arch-based distribution with pacman and AUR support.
   This release ships the stock Arch kernel; selectable kernels (including the
   custom horizon-kernel) arrive in a later release.
-
+ 
   Installation guide : https://wiki.archlinux.org/title/Installation_guide
                        or run:  Installation_guide
-
+ 
   Wi-Fi              : iwctl
   Mobile broadband   : mmcli
-
+ 
   Ethernet, WLAN and WWAN interfaces using DHCP should work automatically.
-
+ 
+  Horizon tools       : `horizon --help`, `horizon-install` (TUI installer)
+ 
   Documentation      : https://github.com/JustAKid-hash/Horizon-OS
-

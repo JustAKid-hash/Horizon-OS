@@ -81,6 +81,29 @@ wsl -d archlinux -e bash "$wslRepo/scripts/build-iso.sh"
 pwsh -File "$repo\scripts\run-qemu.ps1"
 ```
 
+### Rust tooling
+
+The `horizon` CLI and `horizon-install` installer live under `src/` and are
+built inside the Arch WSL2 distro (the Windows toolchain cannot target Linux):
+
+```powershell
+# Build the workspace (mirrors src/ to ext4 first, then cargo build --release)
+wsl -d archlinux -e bash "$wslRepo/scripts/build-rust.sh"
+
+# Generate the signing key (once per build host) and build the [horizon] repo
+wsl -d archlinux -e bash "$wslRepo/scripts/setup-signing-key.sh"
+wsl -d archlinux -e bash "$wslRepo/scripts/build-repo.sh"
+```
+
+`build-iso.sh` calls `build-rust.sh` itself when the `horizon` binary is
+missing, and stages the resulting binary plus the signed repository into the
+live medium, so a normal ISO build is all that is needed for end users.
+
+`horizon` exposes `info`, `about`, `doctor`, `kernel`, `update`, and
+`desktop {list,show,packages,status,install,gen-pkgbuild}`. Desktop
+environments are declared once in `src/horizon/data/desktops.toml`, which both
+the CLI and `build-repo.sh` consume.
+
 Until `profile/` contains the Horizon profile, `build-iso.sh` falls back to the
 stock `releng` profile shipped with archiso.
 
