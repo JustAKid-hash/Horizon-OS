@@ -6,6 +6,25 @@ Rust tooling — growing from a CLI system into a full GUI desktop.
 
 See [`docs/PLAN.md`](docs/PLAN.md) for the full design and rationale.
 
+**Status:** early. The ISO builds and boots to a Horizon-branded shell; the
+installer and package tooling are not written yet.
+
+## Quick start
+
+```powershell
+# 1. Install the build toolchain into the Arch Linux WSL2 distro (once)
+wsl -d archlinux -e bash "/mnt/d/Albarr/VSC-Projects/Horizon-OS/scripts/bootstrap-wsl.sh"
+
+# 2. Build the ISO (~15 min)
+wsl -d archlinux -e bash "/mnt/d/Albarr/VSC-Projects/Horizon-OS/scripts/build-iso.sh"
+
+# 3. Boot it in QEMU
+pwsh -File scripts\run-qemu.ps1
+```
+
+The live medium autologins `root` on tty1, so you land at a `[root@horizon ~]#`
+prompt. See [Building](#building) and [Testing](#testing) for the details.
+
 ## Status
 
 - [x] **Phase 0** — Foundation: build environment ready; stock Arch ISO builds and boots to a `root@archiso` shell under UEFI (OVMF) in QEMU, verified headlessly
@@ -25,6 +44,17 @@ See [`docs/PLAN.md`](docs/PLAN.md) for the full design and rationale.
 | `config/` | kernel defconfig, mkinitcpio, pacman, systemd |
 | `scripts/` | bootstrap / build / test automation |
 | `iso/` | build output (gitignored) |
+| `LICENSE` | MIT |
+
+## Requirements
+
+To build: Windows with WSL2, an Arch Linux WSL2 distro, and ~10 GB free inside it.
+`scripts/bootstrap-wsl.sh` installs everything else (`archiso`, `mkarchiso`,
+`grub`, `efibootmgr`, `syslinux`, `base-devel`, …).
+
+To test: QEMU for Windows with the WHPX accelerator, and `pwsh` (PowerShell 7).
+On Linux, `qemu-system-x86_64` plus `edk2-ovmf` works just as well — only the
+PowerShell test harness is Windows-specific.
 
 ## Building
 
@@ -34,13 +64,16 @@ too slow for squashfs and kernel work. `scripts/build-iso.sh` mirrors the repo i
 `~/horizon` on the WSL ext4 filesystem automatically.
 
 ```powershell
-$repo = 'D:\Albarr\VSC-Projects\Horizon-OS'
+# Your clone, in Windows form and in WSL form (the scripts locate the repo
+# root from their own path, so this only has to point at the real clone).
+$repo    = 'D:\Albarr\VSC-Projects\Horizon-OS'
+$wslRepo = '/mnt/d/Albarr/VSC-Projects/Horizon-OS'
 
 # 1. Set up the build host (mkarchiso deps, grub, efibootmgr, syslinux, ...)
-wsl -d archlinux -e bash "/mnt/d/Albarr/VSC-Projects/Horizon-OS/scripts/bootstrap-wsl.sh"
+wsl -d archlinux -e bash "$wslRepo/scripts/bootstrap-wsl.sh"
 
-# 2. Build the ISO
-wsl -d archlinux -e bash "/mnt/d/Albarr/VSC-Projects/Horizon-OS/scripts/build-iso.sh"
+# 2. Build the ISO (writes iso\horizon-<date>-x86_64.iso)
+wsl -d archlinux -e bash "$wslRepo/scripts/build-iso.sh"
 
 # 3. Boot it
 pwsh -File "$repo\scripts\run-qemu.ps1"
@@ -110,4 +143,38 @@ A pass looks like the Horizon MOTD and a `[root@horizon ~]#` prompt in the OCR
 output. `scripts/ocr-screenshot.ps1` can also be run on any screenshot on its own;
 it upscales the image and uses the OCR engine built into Windows, so it needs no
 extra tooling.
+
+## Running on real hardware
+
+The ISO is a hybrid image: it boots from a USB stick under UEFI **and** under
+legacy BIOS. Write it with any raw-image writer — on Windows, Rufus in **DD mode**
+or `dd` from the WSL side:
+
+```bash
+# WSL, with the USB stick at /dev/sdX  (double-check this — it is destructive)
+sudo dd if=/root/horizon/out/horizon-*.iso of=/dev/sdX bs=4M status=progress oflag=sync
+```
+
+Then boot the machine from the stick. The systemd-boot / GRUB / syslinux menu
+offers **Horizon OS install medium** and a speakup screen-reader variant. Nothing
+is written to disk unless you partition it yourself — at this stage the live
+medium is a shell, not yet a guided installer.
+
+## Notes for contributors
+
+- Everything in `profile/airootfs/` is Linux-side content; keep it LF. `.gitattributes`
+  enforces that.
+- The 27 symlinks under `profile/airootfs/` are load-bearing. If a checkout loses
+  them, `scripts/create-profile-symlinks.ps1` puts them back.
+- Builds are slow because of squashfs xz compression (a few minutes) and, later,
+  kernel compiles (~30–45 min at `-j8`). Prefer `-comp zstd` in `profiledef.sh`
+  while iterating on branding if you don't care about final image size.
+
+## License
+
+[MIT](LICENSE) — Copyright (c) 2026 ZeroByte.
+
+That covers Horizon OS's own code (the profile, the scripts, and the Rust tooling
+under `src/`). The Arch Linux packages the ISO redistributes keep their own
+licenses, and Horizon OS is not affiliated with or endorsed by Arch Linux.
 
