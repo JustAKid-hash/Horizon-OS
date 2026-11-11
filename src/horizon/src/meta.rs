@@ -80,3 +80,26 @@ pub fn cmd_gen_pkgbuild(id: &str, out_dir: &Path) -> Result<()> {
     );
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn package_name_format() {
+        let cat = crate::desktops::Catalog::load().unwrap();
+        let d = cat.find("plasma").unwrap();
+        assert_eq!(package_name(d), "horizon-desktop-plasma");
+    }
+
+    #[test]
+    fn render_contains_depends_and_package() {
+        let cat = crate::desktops::Catalog::load().unwrap();
+        let d = cat.find("xfce").unwrap();
+        let s = render(&cat, d);
+        assert!(s.contains("pkgname=horizon-desktop-xfce"));
+        assert!(s.contains("depends=("));
+        assert!(s.contains("'xfce4'"));
+        assert!(s.contains("package() {"));
+    }
+}

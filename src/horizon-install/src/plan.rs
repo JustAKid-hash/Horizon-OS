@@ -48,3 +48,30 @@ pub fn valid_name(s: &str) -> bool {
         && s.chars()
             .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_')
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn partition_handles_nvme() {
+        assert_eq!(partition("/dev/nvme0n1", 1), "/dev/nvme0n1p1");
+        assert_eq!(partition("/dev/nvme0n1", 2), "/dev/nvme0n1p2");
+    }
+
+    #[test]
+    fn partition_handles_sd() {
+        assert_eq!(partition("/dev/sda", 1), "/dev/sda1");
+        assert_eq!(partition("/dev/sda", 2), "/dev/sda2");
+    }
+
+    #[test]
+    fn valid_name_rules() {
+        assert!(valid_name("horizon"));
+        assert!(valid_name("a-b_c"));
+        assert!(!valid_name(""));
+        assert!(!valid_name("Horizon"));
+        assert!(!valid_name("has space"));
+        assert!(!valid_name(&"a".repeat(33)));
+    }
+}

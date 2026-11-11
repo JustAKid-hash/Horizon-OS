@@ -315,3 +315,49 @@ pub fn cmd_install(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    #[test]
+    fn catalog_loads_five_desktops() {
+        let cat = Catalog::load().unwrap();
+        assert_eq!(cat.meta.version, 1);
+        assert_eq!(cat.desktop.len(), 5);
+        let ids: Vec<&str> = cat.desktop.iter().map(|d| d.id.as_str()).collect();
+        for expected in ["plasma", "gnome", "cinnamon", "hyprland", "xfce"] {
+            assert!(ids.contains(&expected), "missing desktop {expected}");
+        }
+    }
+
+    #[test]
+    fn find_is_case_insensitive() {
+        let cat = Catalog::load().unwrap();
+        assert!(cat.find("PLASMA").is_ok());
+        assert!(cat.find("nope").is_err());
+    }
+
+    #[test]
+    fn full_packages_dedupes() {
+        let cat = Catalog::load().unwrap();
+        let d = cat.find("plasma").unwrap();
+        let pkgs = cat.full_packages(d, true);
+        let mut seen = HashSet::new();
+        for p in &pkgs {
+            assert!(seen.insert(p.as_str()), "duplicate package {p}");
+        }
+        assert_eq!(pkgs[0], "xdg-desktop-portal");
+    }
+
+    #[test]
+    fn full_packages_minimal_omits_common() {
+        let cat = Catalog::load().unwrap();
+        let d = cat.find("xfce").unwrap();
+        let full = cat.full_packages(d, true);
+        let minimal = cat.full_packages(d, false);
+        assert!(full.len() > minimal.len());
+        assert!(!minimal.contains(&"firefox".to_string()));
+    }
+}
