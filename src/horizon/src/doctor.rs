@@ -187,7 +187,12 @@ pub fn cmd_doctor() -> Result<()> {
     println!();
     let mut worst = Level::Ok;
     for c in checks() {
-        println!("  {}  {}  {}", ui::tag(c.level), ui::pad(&c.name, 20), c.detail);
+        println!(
+            "  {}  {}  {}",
+            ui::tag(c.level),
+            ui::pad(&c.name, 20),
+            c.detail
+        );
         worst = match (worst, c.level) {
             (_, Level::Fail) => Level::Fail,
             (Level::Ok, Level::Warn) => Level::Warn,

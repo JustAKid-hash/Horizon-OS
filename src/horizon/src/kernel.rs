@@ -53,11 +53,10 @@ pub fn cmd_list() -> Result<()> {
     }
 
     println!(
-        "  {}  {}  {}  {}",
+        "  {}  {}  {}  status",
         ui::pad("Version", 28),
         ui::pad("kernel", 7),
-        ui::pad("initramfs", 10),
-        "status"
+        ui::pad("initramfs", 10)
     );
     for v in &versions {
         let has_vmlinuz = boot.join(format!("vmlinuz-{v}")).exists();

@@ -138,10 +138,7 @@ fn disk(f: &mut Frame, app: &App, area: Rect) {
             .iter()
             .map(|d| {
                 ListItem::new(Line::from(vec![
-                    Span::styled(
-                        format!("{:<14}", d.path),
-                        Style::default().fg(Color::Cyan),
-                    ),
+                    Span::styled(format!("{:<14}", d.path), Style::default().fg(Color::Cyan)),
                     Span::styled(format!("{:<8}", d.size), Style::default().fg(Color::Yellow)),
                     Span::raw(d.model.clone()),
                 ]))
@@ -153,14 +150,16 @@ fn disk(f: &mut Frame, app: &App, area: Rect) {
         .block(block(" Target disk "))
         .highlight_style(Style::default().add_modifier(Modifier::REVERSED))
         .highlight_symbol("> ");
-    f.render_stateful_widget(list, chunks[0], &mut list_state(app.disk_idx, app.disks.len()));
+    f.render_stateful_widget(
+        list,
+        chunks[0],
+        &mut list_state(app.disk_idx, app.disks.len()),
+    );
 
     let warn = Paragraph::new(vec![
         Line::from(Span::styled(
             "  The chosen disk will be COMPLETELY ERASED.",
-            Style::default()
-                .fg(Color::Red)
-                .add_modifier(Modifier::BOLD),
+            Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
         )),
         Line::from("  Make sure it holds nothing you need."),
     ])
@@ -188,7 +187,11 @@ fn kernel(f: &mut Frame, app: &App, area: Rect) {
         .block(block(" Kernel "))
         .highlight_style(Style::default().add_modifier(Modifier::REVERSED))
         .highlight_symbol("> ");
-    f.render_stateful_widget(list, chunks[0], &mut list_state(app.kernel_idx, app.kernels.len()));
+    f.render_stateful_widget(
+        list,
+        chunks[0],
+        &mut list_state(app.kernel_idx, app.kernels.len()),
+    );
 
     let note = Paragraph::new(Line::from(
         "  Both kernels are Arch packages and can coexist; pick either from GRUB at boot.",
@@ -218,7 +221,9 @@ fn desktop(f: &mut Frame, app: &App, area: Rect) {
     );
 
     let detail = match app.desktops.get(app.desktop_idx).and_then(|d| d.as_ref()) {
-        None => vec![Line::from("  A CLI-only system: base, kernel, pacman and the AUR.")],
+        None => vec![Line::from(
+            "  A CLI-only system: base, kernel, pacman and the AUR.",
+        )],
         Some(d) => vec![
             Line::from(vec![
                 Span::styled("  session   ", Style::default().fg(Color::DarkGray)),
@@ -240,7 +245,9 @@ fn desktop(f: &mut Frame, app: &App, area: Rect) {
         ],
     };
     f.render_widget(
-        Paragraph::new(detail).wrap(Wrap { trim: false }).block(block(" Details ")),
+        Paragraph::new(detail)
+            .wrap(Wrap { trim: false })
+            .block(block(" Details ")),
         chunks[1],
     );
 }
@@ -260,7 +267,9 @@ fn account(f: &mut Frame, app: &App, area: Rect) {
         let focused = app.focus == i;
         let marker = if focused { ">" } else { " " };
         let style = if focused {
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD)
         } else {
             Style::default()
         };
@@ -313,7 +322,14 @@ fn confirm(f: &mut Frame, app: &App, area: Rect) {
     let text = vec![
         Line::from(""),
         row("disk", disk),
-        row("firmware", if app.uefi { "UEFI".into() } else { "BIOS (legacy)".to_string() }),
+        row(
+            "firmware",
+            if app.uefi {
+                "UEFI".into()
+            } else {
+                "BIOS (legacy)".to_string()
+            },
+        ),
         row("kernel", kernel.to_string()),
         row("desktop", desktop),
         row("hostname", app.hostname.clone()),
@@ -388,7 +404,9 @@ fn finished(f: &mut Frame, app: &App, area: Rect) {
         None => vec![Line::from("  ...")],
     };
     f.render_widget(
-        Paragraph::new(text).wrap(Wrap { trim: false }).block(block(" Done ")),
+        Paragraph::new(text)
+            .wrap(Wrap { trim: false })
+            .block(block(" Done ")),
         area,
     );
 }

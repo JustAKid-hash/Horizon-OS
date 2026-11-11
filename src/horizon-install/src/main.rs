@@ -133,13 +133,13 @@ fn headless(args: Args) -> Result<()> {
         .user
         .clone()
         .context("--yes needs --user, e.g. --user albarr")?;
-    let password = args
-        .password
-        .clone()
-        .context("--yes needs --password")?;
+    let password = args.password.clone().context("--yes needs --password")?;
 
     if !plan::valid_name(&args.hostname) {
-        bail!("hostname '{}' is invalid: use lowercase a-z, 0-9, '-' or '_'", args.hostname);
+        bail!(
+            "hostname '{}' is invalid: use lowercase a-z, 0-9, '-' or '_'",
+            args.hostname
+        );
     }
     if !plan::valid_name(&username) {
         bail!("username '{username}' is invalid: use lowercase a-z, 0-9, '-' or '_'");
@@ -258,7 +258,10 @@ fn restore_terminal(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>) 
     Ok(())
 }
 
-fn run_loop(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, app: &mut App) -> Result<()> {
+fn run_loop(
+    terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    app: &mut App,
+) -> Result<()> {
     while !app.quit {
         app.tick();
         terminal.draw(|f| ui::draw(f, app))?;

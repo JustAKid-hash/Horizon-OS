@@ -140,14 +140,16 @@ pub fn cmd_show(id: &str) -> Result<()> {
     println!();
     println!("  {} {}", ui::pad("Session", 16), d.session);
     println!(
-        "  {} {}",
+        "  {} {}  ({})",
         ui::pad("Display manager", 16),
-        format!("{}  ({})", d.display_manager, d.dm_service)
+        d.display_manager,
+        d.dm_service
     );
     println!(
-        "  {} {}",
+        "  {} {} + {} shared",
         ui::pad("Packages", 16),
-        format!("{} + {} shared", d.packages.len(), cat.meta.common.len())
+        d.packages.len(),
+        cat.meta.common.len()
     );
     println!();
     println!("  {}", ui::bold("Packages"));
@@ -234,7 +236,10 @@ fn confirm(prompt: &str) -> Result<bool> {
     if std::io::stdin().read_line(&mut line).is_err() {
         return Ok(false);
     }
-    Ok(matches!(line.trim().to_ascii_lowercase().as_str(), "y" | "yes"))
+    Ok(matches!(
+        line.trim().to_ascii_lowercase().as_str(),
+        "y" | "yes"
+    ))
 }
 
 pub fn cmd_install(
@@ -253,13 +258,16 @@ pub fn cmd_install(
 
     let packages = cat.full_packages(d, !minimal);
 
-    println!("{} {}", ui::bold(&format!("Installing {}", d.name)), ui::dim(&format!("({})", d.id)));
+    println!(
+        "{} {}",
+        ui::bold(&format!("Installing {}", d.name)),
+        ui::dim(&format!("({})", d.id))
+    );
     println!();
     if minimal {
         println!(
-            "  {} {}",
-            ui::yellow("note:"),
-            "minimal install -- the shared desktop packages (fonts, audio, network applet) are skipped"
+            "  {} minimal install -- the shared desktop packages (fonts, audio, network applet) are skipped",
+            ui::yellow("note:")
         );
     }
     println!("  {} {}", ui::pad("Packages", 16), packages.len());
@@ -293,7 +301,7 @@ pub fn cmd_install(
     if dry_run {
         println!("{}", ui::yellow("Dry run complete; nothing changed."));
     } else {
-        println!("{} {}", ui::green("Done."), format!("{} is installed.", d.name));
+        println!("{} {} is installed.", ui::green("Done."), d.name);
     }
 
     if !d.notes.is_empty() {
