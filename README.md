@@ -8,7 +8,7 @@ See [`docs/PLAN.md`](docs/PLAN.md) for the full design and rationale.
 
 ## Status
 
-- [x] **Phase 0** — Foundation: build environment ready, stock Arch ISO pipeline proven in QEMU
+- [x] **Phase 0** — Foundation: build environment ready; stock Arch ISO builds and boots to a `root@archiso` shell under UEFI (OVMF) in QEMU, verified headlessly
 - [ ] **Phase 1** — Horizon CLI OS v0.1 (branding, `horizon` CLI, TUI installer, AUR helper)
 - [ ] **Phase 2** — Multi-kernel support (`linux`, `linux-lts`, `horizon-kernel`)
 - [ ] **Phase 3** — GUI base + selectable desktops (Plasma, GNOME, Cinnamon, Hyprland, XFCE)
@@ -59,3 +59,23 @@ pwsh -File scripts\run-qemu.ps1 -Memory 8G      # more RAM
 pwsh -File scripts\run-qemu.ps1 -Bios           # BIOS instead of UEFI
 pwsh -File scripts\run-qemu.ps1 -Disk D:\vms\horizon.qcow2   # attach a disk
 ```
+
+### Headless smoke test
+
+`scripts/test-boot.ps1` is the automated gate: it boots the newest ISO with
+`-display none`, waits, captures a screenshot through the QEMU monitor, converts
+it to PNG, and shuts the VM down. Add `-Ocr` to also read the guest console back
+as text, which is what makes the test self-verifying.
+
+```powershell
+pwsh -File scripts\test-boot.ps1 -Ocr            # boot, screenshot, OCR the console
+pwsh -File scripts\test-boot.ps1 -WaitSeconds 300 -Ocr
+pwsh -File scripts\test-boot.ps1 -KeepRunning    # leave the VM up
+pwsh -File scripts\test-boot.ps1 -Bios -Ocr      # SeaBIOS path
+```
+
+A pass looks like the archiso banner and a `[root@archiso ~]#` prompt in the OCR
+output. `scripts/ocr-screenshot.ps1` can also be run on any screenshot on its own;
+it upscales the image and uses the OCR engine built into Windows, so it needs no
+extra tooling.
+
